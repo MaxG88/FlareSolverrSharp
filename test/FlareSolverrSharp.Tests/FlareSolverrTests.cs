@@ -170,6 +170,7 @@ namespace FlareSolverrSharp.Tests
                 Assert.Fail("Unexpected exception: " + e);
             }
         }
+
         [TestMethod]
         public async Task SolveTestSessions()
         {

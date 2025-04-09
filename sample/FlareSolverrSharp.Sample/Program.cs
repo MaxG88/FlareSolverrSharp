@@ -1,4 +1,3 @@
-
 namespace FlareSolverrSharp.Sample
 {
     internal static class Program

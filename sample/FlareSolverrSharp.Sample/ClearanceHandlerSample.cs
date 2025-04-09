@@ -10,7 +10,6 @@ namespace FlareSolverrSharp.Sample
 {
     public static class ClearanceHandlerSample
     {
-
         public const string FlareSolverrUrl = "http://localhost:8191/";
         public const string ProtectedUrl = "https://badasstorrents.com/torrents/search/720p/date/desc";
 
@@ -67,12 +66,12 @@ namespace FlareSolverrSharp.Sample
                 builder.Append('=');
                 builder.Append(HttpUtility.UrlEncode(pair.Value, encoding));
             }
+
             // HttpRuleParser.DefaultHttpEncoding == "latin1"
             var data = Encoding.GetEncoding("latin1").GetBytes(builder.ToString());
             var content = new ByteArrayContent(data);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             return content;
         }
-
     }
 }

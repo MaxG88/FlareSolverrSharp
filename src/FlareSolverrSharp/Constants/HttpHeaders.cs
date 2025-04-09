@@ -7,6 +7,5 @@ namespace FlareSolverrSharp.Constants
         public const string Cookie = "Cookie";
 
         public const string SetCookie = "Set-Cookie";
-
     }
 }

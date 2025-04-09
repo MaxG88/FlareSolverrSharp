@@ -8,7 +8,8 @@ namespace FlareSolverrSharp
 {
     public static class ChallengeDetector
     {
-        private static readonly HashSet<string> CloudflareServerNames = new HashSet<string>{
+        private static readonly HashSet<string> CloudflareServerNames = new HashSet<string>
+        {
         "cloudflare",
         "cloudflare-nginx",
         "ddos-guard"
@@ -60,6 +61,5 @@ namespace FlareSolverrSharp
 
             return false;
         }
-
     }
 }

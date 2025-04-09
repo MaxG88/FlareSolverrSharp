@@ -15,7 +15,6 @@ namespace FlareSolverrSharp.Tests
     [TestClass]
     public class ClearanceHandlerTests
     {
-
         [TestMethod]
         public async Task SolveOk()
         {
@@ -356,6 +355,7 @@ namespace FlareSolverrSharp.Tests
                 builder.Append('=');
                 builder.Append(HttpUtility.UrlEncode(pair.Value, encoding));
             }
+
             // HttpRuleParser.DefaultHttpEncoding == "latin1"
             var data = Encoding.GetEncoding("latin1").GetBytes(builder.ToString());
             var content = new ByteArrayContent(data);

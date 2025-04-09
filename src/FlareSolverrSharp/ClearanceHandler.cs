@@ -18,10 +18,10 @@ namespace FlareSolverrSharp
     /// </summary>
     public class ClearanceHandler : DelegatingHandler
     {
-        private readonly HttpClient _client;
-        private readonly string _flareSolverrApiUrl;
-        private FlareSolverr? _flareSolverr;
-        private string _userAgent = "";
+        private readonly HttpClient client;
+        private readonly string flareSolverrApiUrl;
+        private FlareSolverr? flareSolverr;
+        private string userAgent = "";
 
         /// <summary>
         /// Max timeout to solve the challenge.
@@ -62,9 +62,9 @@ namespace FlareSolverrSharp
                 throw new FlareSolverrException("FlareSolverr URL is malformed: " + flareSolverrApiUrl);
             }
 
-            _flareSolverrApiUrl = flareSolverrApiUrl;
+            this.flareSolverrApiUrl = flareSolverrApiUrl;
 
-            _client = new HttpClient(new HttpClientHandler
+            client = new HttpClient(new HttpClientHandler
             {
                 AllowAutoRedirect = false,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
@@ -81,9 +81,9 @@ namespace FlareSolverrSharp
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Init FlareSolverr
-            if (_flareSolverr == null && !string.IsNullOrWhiteSpace(_flareSolverrApiUrl))
+            if (flareSolverr == null && !string.IsNullOrWhiteSpace(flareSolverrApiUrl))
             {
-                _flareSolverr = new FlareSolverr(_flareSolverrApiUrl)
+                flareSolverr = new FlareSolverr(flareSolverrApiUrl)
                 {
                     MaxTimeout = MaxTimeout,
                     ProxyUrl = ProxyUrl,
@@ -101,19 +101,19 @@ namespace FlareSolverrSharp
             // Detect if there is a challenge in the response
             if (ChallengeDetector.IsClearanceRequired(response))
             {
-                if (_flareSolverr == null)
+                if (flareSolverr == null)
                 {
                     throw new FlareSolverrException("Challenge detected but FlareSolverr is not configured");
                 }
 
                 // Resolve the challenge using FlareSolverr API
-                var flareSolverrResponse = await _flareSolverr.Solve(request);
+                var flareSolverrResponse = await flareSolverr.Solve(request);
 
                 // Save the FlareSolverr User-Agent for the following requests
                 var flareSolverUserAgent = flareSolverrResponse.Solution?.UserAgent;
                 if (flareSolverUserAgent != null && !flareSolverUserAgent.Equals(request.Headers.UserAgent.ToString()))
                 {
-                    _userAgent = flareSolverUserAgent;
+                    userAgent = flareSolverUserAgent;
 
                     // Set the User-Agent if required
                     SetUserAgentHeader(request);
@@ -138,11 +138,11 @@ namespace FlareSolverrSharp
 
         private void SetUserAgentHeader(HttpRequestMessage request)
         {
-            if (_userAgent != null)
+            if (userAgent != null)
             {
                 // Overwrite the header
                 request.Headers.Remove(HttpHeaders.UserAgent);
-                request.Headers.Add(HttpHeaders.UserAgent, _userAgent);
+                request.Headers.Add(HttpHeaders.UserAgent, userAgent);
             }
         }
 
@@ -240,11 +240,10 @@ namespace FlareSolverrSharp
         {
             if (disposing)
             {
-                _client.Dispose();
+                client.Dispose();
             }
 
             base.Dispose(disposing);
         }
-
     }
 }

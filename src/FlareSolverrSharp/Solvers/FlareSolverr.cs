@@ -13,13 +13,15 @@ namespace FlareSolverrSharp.Solvers
     public class FlareSolverr
     {
         private static readonly SemaphoreLocker Locker = new SemaphoreLocker();
-        private HttpClient _httpClient = new();
-        private readonly Uri _flareSolverrUri;
+        private HttpClient httpClient = new();
+        private readonly Uri flareSolverrUri;
 
         public int MaxTimeout { get; set; } = 60000;
 
         public string ProxyUrl { get; set; } = "";
+
         public string? ProxyUsername { get; set; }
+
         public string? ProxyPassword { get; set; }
 
         public FlareSolverr(string flareSolverrApiUrl)
@@ -30,7 +32,7 @@ namespace FlareSolverrSharp.Solvers
                 apiUrl += "/";
             }
 
-            _flareSolverrUri = new Uri(apiUrl + "v1");
+            flareSolverrUri = new Uri(apiUrl + "v1");
         }
 
         public async Task<FlareSolverrResponse> Solve(HttpRequestMessage request, string sessionId = "")
@@ -81,12 +83,12 @@ namespace FlareSolverrSharp.Solvers
                 HttpResponseMessage response;
                 try
                 {
-                    _httpClient = new HttpClient
+                    httpClient = new HttpClient
                     {
                         // wait 5 more seconds to make sure we return the FlareSolverr timeout message
                         Timeout = TimeSpan.FromMilliseconds(MaxTimeout + 5000)
                     };
-                    response = await _httpClient.PostAsync(_flareSolverrUri, flareSolverrRequest);
+                    response = await httpClient.PostAsync(flareSolverrUri, flareSolverrRequest);
                 }
                 catch (HttpRequestException e)
                 {
@@ -98,7 +100,7 @@ namespace FlareSolverrSharp.Solvers
                 }
                 finally
                 {
-                    _httpClient.Dispose();
+                    httpClient.Dispose();
                 }
 
                 // Don't try parsing if FlareSolverr hasn't returned 200 or 500
@@ -122,27 +124,22 @@ namespace FlareSolverrSharp.Solvers
                 {
                     Enum.TryParse(result.Status, true, out FlareSolverrStatusCode returnStatusCode);
 
-                    if (returnStatusCode.Equals(FlareSolverrStatusCode.ok))
+                    switch (returnStatusCode)
                     {
-                        return result;
+                        case FlareSolverrStatusCode.Ok:
+                            return result;
+                        case FlareSolverrStatusCode.Warning:
+                            throw new FlareSolverrException(
+                                "FlareSolverr was able to process the request, but a captcha was detected. Message: "
+                                + result.Message);
+                        case FlareSolverrStatusCode.Error:
+                            throw new FlareSolverrException(
+                                "FlareSolverr was unable to process the request, please check FlareSolverr logs. Message: "
+                                + result.Message);
+                        default:
+                            throw new FlareSolverrException("Unable to map FlareSolverr returned status code, received code: "
+                                + result.Status + ". Message: " + result.Message);
                     }
-
-                    if (returnStatusCode.Equals(FlareSolverrStatusCode.warning))
-                    {
-                        throw new FlareSolverrException(
-                            "FlareSolverr was able to process the request, but a captcha was detected. Message: "
-                            + result.Message);
-                    }
-
-                    if (returnStatusCode.Equals(FlareSolverrStatusCode.error))
-                    {
-                        throw new FlareSolverrException(
-                            "FlareSolverr was unable to process the request, please check FlareSolverr logs. Message: "
-                            + result.Message);
-                    }
-
-                    throw new FlareSolverrException("Unable to map FlareSolverr returned status code, received code: "
-                        + result.Status + ". Message: " + result.Message);
                 }
                 catch (ArgumentException)
                 {
@@ -243,6 +240,5 @@ namespace FlareSolverrSharp.Solvers
 
             return GetSolverRequestContent(req);
         }
-
     }
 }
