@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -25,7 +25,10 @@ namespace FlareSolverrSharp.Solvers
         {
             var apiUrl = flareSolverrApiUrl;
             if (!apiUrl.EndsWith("/"))
+            {
                 apiUrl += "/";
+            }
+
             _flareSolverrUri = new Uri(apiUrl + "v1");
         }
 
@@ -77,9 +80,11 @@ namespace FlareSolverrSharp.Solvers
                 HttpResponseMessage response;
                 try
                 {
-                    _httpClient = new HttpClient();
-                    // wait 5 more seconds to make sure we return the FlareSolverr timeout message
-                    _httpClient.Timeout = TimeSpan.FromMilliseconds(MaxTimeout + 5000);
+                    _httpClient = new HttpClient
+                    {
+                        // wait 5 more seconds to make sure we return the FlareSolverr timeout message
+                        Timeout = TimeSpan.FromMilliseconds(MaxTimeout + 5000)
+                    };
                     response = await _httpClient.PostAsync(_flareSolverrUri, flareSolverrRequest);
                 }
                 catch (HttpRequestException e)
@@ -159,12 +164,17 @@ namespace FlareSolverrSharp.Solvers
                 if (!string.IsNullOrWhiteSpace(ProxyUsername))
                 {
                     proxy.Username = ProxyUsername;
-                };
+                }
+
+                ;
                 if (!string.IsNullOrWhiteSpace(ProxyPassword))
                 {
                     proxy.Password = ProxyPassword;
-                };
+                }
+
+                ;
             }
+
             return proxy;
         }
 
@@ -182,7 +192,9 @@ namespace FlareSolverrSharp.Solvers
         {
             FlareSolverrRequest req;
             if (string.IsNullOrWhiteSpace(sessionId))
+            {
                 sessionId = null;
+            }
 
             var url = request.RequestUri.ToString();
 

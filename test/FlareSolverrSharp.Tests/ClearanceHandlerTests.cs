@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -56,7 +56,10 @@ namespace FlareSolverrSharp.Tests
             };
             var cookieUrl = new Uri(url.Scheme + "://" + url.Host);
             for (var i = 0; i < 6; i++)
+            {
                 cookiesContainer.Add(cookieUrl, new Cookie($"cookie{i}", $"value{i}"));
+            }
+
             var cookies = cookiesContainer.GetCookies(url);
             Assert.AreEqual(5, cookies.Count); // the first cookie0 is lost
             Assert.AreEqual("cookie1", cookies.First().Name);
@@ -71,9 +74,9 @@ namespace FlareSolverrSharp.Tests
             };
             var handler = new ClearanceHandler(Settings.FlareSolverrApiUrl)
             {
-                MaxTimeout = 60000
+                MaxTimeout = 60000,
+                InnerHandler = clientHandler
             };
-            handler.InnerHandler = clientHandler;
 
             var client = new HttpClient(handler);
             var response = await client.GetAsync(url);
@@ -81,7 +84,7 @@ namespace FlareSolverrSharp.Tests
 
             // we check the cookies again
             cookies = cookiesContainer.GetCookies(url);
-            Assert.AreEqual(5, cookies.Count); 
+            Assert.AreEqual(5, cookies.Count);
             Assert.IsNotNull(cookies["cf_clearance"]);
         }
 
@@ -96,7 +99,7 @@ namespace FlareSolverrSharp.Tests
             var request = new HttpRequestMessage();
             request.Headers.ExpectContinue = false;
             request.RequestUri = Settings.ProtectedPostUri;
-            var postData = new Dictionary<string, string> { { "story", "test" }};
+            var postData = new Dictionary<string, string> { { "story", "test" } };
             request.Content = FormUrlEncodedContentWithEncoding(postData, Encoding.UTF8);
             request.Method = HttpMethod.Post;
 
@@ -331,19 +334,24 @@ namespace FlareSolverrSharp.Tests
             }
         }
 
-        static ByteArrayContent FormUrlEncodedContentWithEncoding(
+        private static ByteArrayContent FormUrlEncodedContentWithEncoding(
             IEnumerable<KeyValuePair<string, string>> nameValueCollection, Encoding encoding)
         {
             // utf-8 / default
             if (Encoding.UTF8.Equals(encoding) || encoding == null)
+            {
                 return new FormUrlEncodedContent(nameValueCollection);
+            }
 
             // other encodings
             var builder = new StringBuilder();
             foreach (var pair in nameValueCollection)
             {
                 if (builder.Length > 0)
+                {
                     builder.Append('&');
+                }
+
                 builder.Append(HttpUtility.UrlEncode(pair.Key, encoding));
                 builder.Append('=');
                 builder.Append(HttpUtility.UrlEncode(pair.Value, encoding));

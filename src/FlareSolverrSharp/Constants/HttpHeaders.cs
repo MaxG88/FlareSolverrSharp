@@ -1,4 +1,4 @@
-﻿namespace FlareSolverrSharp.Constants
+namespace FlareSolverrSharp.Constants
 {
     public static class HttpHeaders
     {
