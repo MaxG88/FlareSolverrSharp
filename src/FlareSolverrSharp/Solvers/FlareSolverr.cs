@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -13,20 +13,26 @@ namespace FlareSolverrSharp.Solvers
     public class FlareSolverr
     {
         private static readonly SemaphoreLocker Locker = new SemaphoreLocker();
-        private HttpClient _httpClient;
-        private readonly Uri _flareSolverrUri;
+        private HttpClient httpClient = new();
+        private readonly Uri flareSolverrUri;
 
-        public int MaxTimeout = 60000;
-        public string ProxyUrl = "";
-        public string ProxyUsername = null;
-        public string ProxyPassword = null;
+        public int MaxTimeout { get; set; } = 60000;
+
+        public string? ProxyUrl { get; set; }
+
+        public string? ProxyUsername { get; set; }
+
+        public string? ProxyPassword { get; set; }
 
         public FlareSolverr(string flareSolverrApiUrl)
         {
             var apiUrl = flareSolverrApiUrl;
-            if (!apiUrl.EndsWith("/"))
+            if (!apiUrl.EndsWith('/'))
+            {
                 apiUrl += "/";
-            _flareSolverrUri = new Uri(apiUrl + "v1");
+            }
+
+            flareSolverrUri = new Uri(apiUrl + "v1");
         }
 
         public async Task<FlareSolverrResponse> Solve(HttpRequestMessage request, string sessionId = "")
@@ -70,17 +76,19 @@ namespace FlareSolverrSharp.Solvers
 
         private async Task<FlareSolverrResponse> SendFlareSolverrRequest(HttpContent flareSolverrRequest)
         {
-            FlareSolverrResponse result = null;
+            FlareSolverrResponse result = new();
 
             await Locker.LockAsync(async () =>
             {
                 HttpResponseMessage response;
                 try
                 {
-                    _httpClient = new HttpClient();
-                    // wait 5 more seconds to make sure we return the FlareSolverr timeout message
-                    _httpClient.Timeout = TimeSpan.FromMilliseconds(MaxTimeout + 5000);
-                    response = await _httpClient.PostAsync(_flareSolverrUri, flareSolverrRequest);
+                    httpClient = new HttpClient
+                    {
+                        // wait 5 more seconds to make sure we return the FlareSolverr timeout message
+                        Timeout = TimeSpan.FromMilliseconds(MaxTimeout + 5000)
+                    };
+                    response = await httpClient.PostAsync(flareSolverrUri, flareSolverrRequest);
                 }
                 catch (HttpRequestException e)
                 {
@@ -92,7 +100,7 @@ namespace FlareSolverrSharp.Solvers
                 }
                 finally
                 {
-                    _httpClient.Dispose();
+                    httpClient.Dispose();
                 }
 
                 // Don't try parsing if FlareSolverr hasn't returned 200 or 500
@@ -104,7 +112,8 @@ namespace FlareSolverrSharp.Solvers
                 var resContent = await response.Content.ReadAsStringAsync();
                 try
                 {
-                    result = JsonConvert.DeserializeObject<FlareSolverrResponse>(resContent);
+                    result = JsonConvert.DeserializeObject<FlareSolverrResponse>(resContent)
+                        ?? throw new FlareSolverrException("");
                 }
                 catch (Exception)
                 {
@@ -115,27 +124,22 @@ namespace FlareSolverrSharp.Solvers
                 {
                     Enum.TryParse(result.Status, true, out FlareSolverrStatusCode returnStatusCode);
 
-                    if (returnStatusCode.Equals(FlareSolverrStatusCode.ok))
+                    switch (returnStatusCode)
                     {
-                        return result;
+                        case FlareSolverrStatusCode.Ok:
+                            return result;
+                        case FlareSolverrStatusCode.Warning:
+                            throw new FlareSolverrException(
+                                "FlareSolverr was able to process the request, but a captcha was detected. Message: "
+                                + result.Message);
+                        case FlareSolverrStatusCode.Error:
+                            throw new FlareSolverrException(
+                                "FlareSolverr was unable to process the request, please check FlareSolverr logs. Message: "
+                                + result.Message);
+                        default:
+                            throw new FlareSolverrException("Unable to map FlareSolverr returned status code, received code: "
+                                + result.Status + ". Message: " + result.Message);
                     }
-
-                    if (returnStatusCode.Equals(FlareSolverrStatusCode.warning))
-                    {
-                        throw new FlareSolverrException(
-                            "FlareSolverr was able to process the request, but a captcha was detected. Message: "
-                            + result.Message);
-                    }
-
-                    if (returnStatusCode.Equals(FlareSolverrStatusCode.error))
-                    {
-                        throw new FlareSolverrException(
-                            "FlareSolverr was unable to process the request, please check FlareSolverr logs. Message: "
-                            + result.Message);
-                    }
-
-                    throw new FlareSolverrException("Unable to map FlareSolverr returned status code, received code: "
-                        + result.Status + ". Message: " + result.Message);
                 }
                 catch (ArgumentException)
                 {
@@ -147,9 +151,9 @@ namespace FlareSolverrSharp.Solvers
             return result;
         }
 
-        private FlareSolverrRequestProxy GetProxy()
+        private FlareSolverrRequestProxy? GetProxy()
         {
-            FlareSolverrRequestProxy proxy = null;
+            FlareSolverrRequestProxy? proxy = null;
             if (!string.IsNullOrWhiteSpace(ProxyUrl))
             {
                 proxy = new FlareSolverrRequestProxy
@@ -159,12 +163,14 @@ namespace FlareSolverrSharp.Solvers
                 if (!string.IsNullOrWhiteSpace(ProxyUsername))
                 {
                     proxy.Username = ProxyUsername;
-                };
+                }
+
                 if (!string.IsNullOrWhiteSpace(ProxyPassword))
                 {
                     proxy.Password = ProxyPassword;
-                };
+                }
             }
+
             return proxy;
         }
 
@@ -178,15 +184,17 @@ namespace FlareSolverrSharp.Solvers
             return content;
         }
 
-        private HttpContent GenerateFlareSolverrRequest(HttpRequestMessage request, string sessionId = "")
+        private HttpContent GenerateFlareSolverrRequest(HttpRequestMessage request, string? sessionId = null)
         {
             FlareSolverrRequest req;
             if (string.IsNullOrWhiteSpace(sessionId))
+            {
                 sessionId = null;
+            }
 
-            var url = request.RequestUri.ToString();
+            var url = request.RequestUri?.ToString();
 
-            FlareSolverrRequestProxy proxy = GetProxy();
+            var proxy = GetProxy();
 
             if (request.Method == HttpMethod.Get)
             {
@@ -202,14 +210,14 @@ namespace FlareSolverrSharp.Solvers
             else if (request.Method == HttpMethod.Post)
             {
                 // request.Content.GetType() doesn't work well when encoding != utf-8
-                var contentMediaType = request.Content.Headers.ContentType?.MediaType.ToLower() ?? "<null>";
+                var contentMediaType = request.Content?.Headers.ContentType?.MediaType?.ToLower() ?? "<null>";
                 if (contentMediaType.Contains("application/x-www-form-urlencoded"))
                 {
                     req = new FlareSolverrRequestPost
                     {
                         Cmd = "request.post",
                         Url = url,
-                        PostData = request.Content.ReadAsStringAsync().Result,
+                        PostData = request.Content?.ReadAsStringAsync().Result,
                         MaxTimeout = MaxTimeout,
                         Proxy = proxy,
                         Session = sessionId
@@ -218,7 +226,6 @@ namespace FlareSolverrSharp.Solvers
                 else if (contentMediaType.Contains("multipart/form-data")
                          || contentMediaType.Contains("text/html"))
                 {
-                    //TODO Implement - check if we just need to pass the content-type with the relevant headers
                     throw new FlareSolverrException("Unimplemented POST Content-Type: " + contentMediaType);
                 }
                 else
@@ -233,6 +240,5 @@ namespace FlareSolverrSharp.Solvers
 
             return GetSolverRequestContent(req);
         }
-
     }
 }

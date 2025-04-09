@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 
 namespace FlareSolverrSharp.Extensions
 {
@@ -7,7 +7,7 @@ namespace FlareSolverrSharp.Extensions
         public static HttpMessageHandler GetMostInnerHandler(this HttpMessageHandler self)
         {
             return self is DelegatingHandler handler
-                ? handler.InnerHandler.GetMostInnerHandler()
+                ? handler.InnerHandler?.GetMostInnerHandler() ?? self
                 : self;
         }
     }

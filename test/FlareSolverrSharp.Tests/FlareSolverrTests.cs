@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -24,16 +24,16 @@ namespace FlareSolverrSharp.Tests
             Assert.AreEqual("", flareSolverrResponse.Message);
             Assert.IsTrue(flareSolverrResponse.StartTimestamp > 0);
             Assert.IsTrue(flareSolverrResponse.EndTimestamp > flareSolverrResponse.StartTimestamp);
-            Assert.IsTrue(flareSolverrResponse.Version.Contains("2."));
+            Assert.IsTrue(flareSolverrResponse.Version!.Contains("2."));
 
-            Assert.AreEqual("https://www.google.com/", flareSolverrResponse.Solution.Url);
-            Assert.IsTrue(flareSolverrResponse.Solution.Response.Contains("<title>Google</title>"));
-            Assert.IsTrue(flareSolverrResponse.Solution.Cookies.Any());
-            Assert.IsTrue(flareSolverrResponse.Solution.UserAgent.Contains("Firefox/"));
+            Assert.AreEqual("https://www.google.com/", flareSolverrResponse.Solution?.Url);
+            Assert.IsTrue(flareSolverrResponse.Solution!.Response!.Contains("<title>Google</title>"));
+            Assert.IsTrue(flareSolverrResponse.Solution.Cookies!.Any());
+            Assert.IsTrue(flareSolverrResponse.Solution.UserAgent!.Contains("Firefox/"));
 
-            var firstCookie = flareSolverrResponse.Solution.Cookies.First();
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(firstCookie.Name));
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(firstCookie.Value));
+            var firstCookie = flareSolverrResponse.Solution.Cookies!.First();
+            Assert.IsFalse(string.IsNullOrWhiteSpace(firstCookie.Name));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(firstCookie.Value));
         }
 
         [TestMethod]
@@ -47,7 +47,7 @@ namespace FlareSolverrSharp.Tests
 
             var flareSolverrResponse = await flareSolverr.Solve(request);
             Assert.AreEqual("ok", flareSolverrResponse.Status);
-            Assert.IsTrue(flareSolverrResponse.Solution.UserAgent.Contains("Firefox/"));
+            Assert.IsTrue(flareSolverrResponse.Solution!.UserAgent!.Contains("Firefox/"));
         }
 
         [TestMethod]
@@ -65,16 +65,16 @@ namespace FlareSolverrSharp.Tests
             Assert.AreEqual("", flareSolverrResponse.Message);
             Assert.IsTrue(flareSolverrResponse.StartTimestamp > 0);
             Assert.IsTrue(flareSolverrResponse.EndTimestamp > flareSolverrResponse.StartTimestamp);
-            Assert.IsTrue(flareSolverrResponse.Version.Contains("2."));
+            Assert.IsTrue(flareSolverrResponse.Version!.Contains("2."));
 
-            Assert.AreEqual("https://www.google.com/", flareSolverrResponse.Solution.Url);
-            Assert.IsTrue(flareSolverrResponse.Solution.Response.Contains("<title>Google</title>"));
-            Assert.IsTrue(flareSolverrResponse.Solution.Cookies.Any());
-            Assert.IsTrue(flareSolverrResponse.Solution.UserAgent.Contains("Firefox/"));
+            Assert.AreEqual("https://www.google.com/", flareSolverrResponse.Solution?.Url);
+            Assert.IsTrue(flareSolverrResponse.Solution!.Response!.Contains("<title>Google</title>"));
+            Assert.IsTrue(flareSolverrResponse.Solution.Cookies!.Any());
+            Assert.IsTrue(flareSolverrResponse.Solution.UserAgent!.Contains("Firefox/"));
 
-            var firstCookie = flareSolverrResponse.Solution.Cookies.First();
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(firstCookie.Name));
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(firstCookie.Value));
+            var firstCookie = flareSolverrResponse.Solution.Cookies!.First();
+            Assert.IsFalse(string.IsNullOrWhiteSpace(firstCookie.Name));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(firstCookie.Value));
         }
 
         [TestMethod]
@@ -170,6 +170,7 @@ namespace FlareSolverrSharp.Tests
                 Assert.Fail("Unexpected exception: " + e);
             }
         }
+
         [TestMethod]
         public async Task SolveTestSessions()
         {
@@ -181,8 +182,8 @@ namespace FlareSolverrSharp.Tests
             Assert.AreEqual("Session created successfully.", flareSolverrResponse.Message);
             Assert.IsTrue(flareSolverrResponse.StartTimestamp > 0);
             Assert.IsTrue(flareSolverrResponse.EndTimestamp > flareSolverrResponse.StartTimestamp);
-            Assert.IsTrue(flareSolverrResponse.Version.Contains("2."));
-            Assert.IsTrue(flareSolverrResponse.Session.Length > 0);
+            Assert.IsTrue(flareSolverrResponse.Version!.Contains("2."));
+            Assert.IsTrue(flareSolverrResponse.Session?.Length > 0);
 
             // request with session
             var sessionId = flareSolverrResponse.Session;
@@ -190,12 +191,12 @@ namespace FlareSolverrSharp.Tests
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             flareSolverrResponse = await flareSolverr.Solve(request, sessionId);
             Assert.AreEqual("ok", flareSolverrResponse.Status);
-            Assert.AreEqual("200", flareSolverrResponse.Solution.Status);
+            Assert.AreEqual("200", flareSolverrResponse.Solution?.Status);
 
             // list sessions
             flareSolverrResponse = await flareSolverr.ListSessions();
             Assert.AreEqual("ok", flareSolverrResponse.Status);
-            Assert.IsTrue(flareSolverrResponse.Sessions.Contains(sessionId));
+            Assert.IsTrue(flareSolverrResponse.Sessions!.Contains(sessionId));
 
             // destroy session
             flareSolverrResponse = await flareSolverr.DestroySession(sessionId);

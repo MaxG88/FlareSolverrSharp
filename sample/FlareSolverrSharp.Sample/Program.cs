@@ -1,9 +1,8 @@
-﻿
 namespace FlareSolverrSharp.Sample
 {
-    static class Program
+    internal static class Program
     {
-        static void Main()
+        private static void Main()
         {
             ClearanceHandlerSample.SampleGet().Wait();
             ClearanceHandlerSample.SamplePostUrlEncoded().Wait();
