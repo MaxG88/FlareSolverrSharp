@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageId>FlareSolverrSharp</PackageId>
     <RootNamespace>FlareSolverrSharp</RootNamespace>
     <Version>3.0.8</Version>

@@ -20,31 +20,32 @@ namespace FlareSolverrSharp
     {
         private readonly HttpClient _client;
         private readonly string _flareSolverrApiUrl;
-        private FlareSolverr _flareSolverr;
-        private string _userAgent;
+        private FlareSolverr? _flareSolverr;
+        private string _userAgent = "";
 
         /// <summary>
         /// Max timeout to solve the challenge.
         /// </summary>
-        public int MaxTimeout = 60000;
+        public int MaxTimeout { get; set; } = 60000;
 
         /// <summary>
         /// HTTP Proxy URL.
         /// Example: http://127.0.0.1:8888
         /// </summary>
-        public string ProxyUrl = "";
+        public string ProxyUrl { get; set; } = "";
 
         /// <summary>
         /// HTTP Proxy Username.
         /// </summary>
-        public string ProxyUsername = null;
+        public string? ProxyUsername { get; set; }
 
         /// <summary>
         /// HTTP Proxy Password.
         /// </summary>
-        public string ProxyPassword = null;
+        public string? ProxyPassword { get; set; }
 
-        private HttpClientHandler HttpClientHandler => InnerHandler.GetMostInnerHandler() as HttpClientHandler;
+        private HttpClientHandler HttpClientHandler => InnerHandler?.GetMostInnerHandler() as HttpClientHandler
+            ?? throw new FlareSolverrException($"{nameof(HttpClientHandler)} is null");
 
         /// <summary>
         /// Creates a new instance of the <see cref="ClearanceHandler"/>.
@@ -109,7 +110,7 @@ namespace FlareSolverrSharp
                 var flareSolverrResponse = await _flareSolverr.Solve(request);
 
                 // Save the FlareSolverr User-Agent for the following requests
-                var flareSolverUserAgent = flareSolverrResponse.Solution.UserAgent;
+                var flareSolverUserAgent = flareSolverrResponse.Solution?.UserAgent;
                 if (flareSolverUserAgent != null && !flareSolverUserAgent.Equals(request.Headers.UserAgent.ToString()))
                 {
                     _userAgent = flareSolverUserAgent;
@@ -148,9 +149,12 @@ namespace FlareSolverrSharp
         private void InjectCookies(HttpRequestMessage request, FlareSolverrResponse flareSolverrResponse)
         {
             // use only Cloudflare and DDoS-GUARD cookies
-            var flareCookies = flareSolverrResponse.Solution.Cookies
-                                                   .Where(cookie => IsCloudflareCookie(cookie.Name))
-                                                   .ToList();
+            var flareCookies = flareSolverrResponse
+                .Solution?
+                .Cookies?
+                .Where(cookie => IsCloudflareCookie(cookie.Name))
+                .ToList()
+                ?? [];
 
             // not using cookies, just add flaresolverr cookies to the header request
             if (!HttpClientHandler.UseCookies)
@@ -163,12 +167,20 @@ namespace FlareSolverrSharp
                 return;
             }
 
+            if (request.RequestUri == null)
+            {
+                throw new FlareSolverrException($"{nameof(request.RequestUri)} is null");
+            }
+
             var currentCookies = HttpClientHandler.CookieContainer.GetCookies(request.RequestUri);
 
             // remove previous FlareSolverr cookies
-            foreach (var cookie in flareCookies.Select(flareCookie => currentCookies[flareCookie.Name]).Where(cookie => cookie != null))
+            foreach (var cookie in flareCookies.Select(flareCookie => currentCookies[flareCookie.Name ?? ""]))
             {
-                cookie.Expired = true;
+                if (cookie != null)
+                {
+                    cookie.Expired = true;
+                }
             }
 
             // add FlareSolverr cookies to CookieContainer
@@ -214,14 +226,15 @@ namespace FlareSolverrSharp
         private static void InjectSetCookieHeader(HttpResponseMessage response, FlareSolverrResponse flareSolverrResponse)
         {
             // inject set-cookie headers in the response
-            foreach (var rCookie in flareSolverrResponse.Solution.Cookies.Where(cookie => IsCloudflareCookie(cookie.Name)))
+            foreach (var rCookie in flareSolverrResponse.Solution?.Cookies?.Where(cookie => IsCloudflareCookie(cookie.Name)) ?? [])
             {
                 response.Headers.Add(HttpHeaders.SetCookie, rCookie.ToHeaderValue());
             }
         }
 
-        private static bool IsCloudflareCookie(string cookieName) =>
-            cookieName.StartsWith("cf_") || cookieName.StartsWith("__cf") || cookieName.StartsWith("__ddg");
+        private static bool IsCloudflareCookie(string? cookieName) =>
+            string.IsNullOrEmpty(cookieName) == false &&
+                (cookieName.StartsWith("cf_") || cookieName.StartsWith("__cf") || cookieName.StartsWith("__ddg"));
 
         protected override void Dispose(bool disposing)
         {

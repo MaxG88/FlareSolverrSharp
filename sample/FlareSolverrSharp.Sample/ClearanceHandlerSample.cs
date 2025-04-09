@@ -11,8 +11,8 @@ namespace FlareSolverrSharp.Sample
     public static class ClearanceHandlerSample
     {
 
-        public static string FlareSolverrUrl = "http://localhost:8191/";
-        public static string ProtectedUrl = "https://badasstorrents.com/torrents/search/720p/date/desc";
+        public const string FlareSolverrUrl = "http://localhost:8191/";
+        public const string ProtectedUrl = "https://badasstorrents.com/torrents/search/720p/date/desc";
 
         public static async Task SampleGet()
         {

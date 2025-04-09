@@ -7,49 +7,49 @@ namespace FlareSolverrSharp.Types
 {
     public class FlareSolverrResponse
     {
-        public string Status;
-        public string Message;
-        public long StartTimestamp;
-        public long EndTimestamp;
-        public string Version;
-        public Solution Solution;
-        public string Session;
-        public string[] Sessions;
+        public string? Status { get; set; }
+        public string? Message { get; set; }
+        public long StartTimestamp { get; set; }
+        public long EndTimestamp { get; set; }
+        public string? Version { get; set; }
+        public Solution? Solution { get; set; }
+        public string? Session { get; set; }
+        public string[]? Sessions { get; set; }
     }
 
     public class Solution
     {
-        public string Url;
-        public string Status;
-        public Headers Headers;
-        public string Response;
-        public Cookie[] Cookies;
-        public string UserAgent;
+        public string? Url { get; set; }
+        public string? Status { get; set; }
+        public Headers? Headers { get; set; }
+        public string? Response { get; set; }
+        public Cookie[]? Cookies { get; set; }
+        public string? UserAgent { get; set; }
     }
 
     public class Cookie
     {
-        public string Name;
-        public string Value;
-        public string Domain;
-        public string Path;
-        public double Expires;
-        public int Size;
-        public bool HttpOnly;
-        public bool Secure;
-        public bool Session;
-        public string SameSite;
+        public string? Name { get; set; }
+        public string? Value { get; set; }
+        public string? Domain { get; set; }
+        public string? Path { get; set; }
+        public double Expires { get; set; }
+        public int Size { get; set; }
+        public bool HttpOnly { get; set; }
+        public bool Secure { get; set; }
+        public bool Session { get; set; }
+        public string? SameSite { get; set; }
 
         public string ToHeaderValue() => $"{Name}={Value}";
-        public System.Net.Cookie ToCookieObj() => new System.Net.Cookie(Name, Value);
+        public System.Net.Cookie ToCookieObj() => new System.Net.Cookie(Name ?? "", Value);
 
     }
 
     public class Headers
     {
-        public string Status;
-        public string Date;
+        public string? Status { get; set; }
+        public string? Date { get; set; }
         [JsonProperty(PropertyName = "content-type")]
-        public string ContentType;
+        public string? ContentType { get; set; }
     }
 }
