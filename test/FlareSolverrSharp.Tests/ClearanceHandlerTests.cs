@@ -151,7 +151,7 @@ namespace FlareSolverrSharp.Tests
             var client = new HttpClient(handler);
             var response = await client.GetAsync(Settings.ProtectedDdgUri);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.IsTrue(!response.Content.ReadAsStringAsync().Result.ToLower().Contains("ddos"));
+            Assert.IsFalse(response.Content.ReadAsStringAsync().Result.Contains("ddos", StringComparison.CurrentCultureIgnoreCase));
         }
 
         [TestMethod]
@@ -166,7 +166,7 @@ namespace FlareSolverrSharp.Tests
             var client = new HttpClient(handler);
             var response = await client.GetAsync(Settings.ProtectedCcfUri);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.IsTrue(!response.Content.ReadAsStringAsync().Result.ToLower().Contains("ddos"));
+            Assert.IsFalse(response.Content.ReadAsStringAsync().Result.Contains("ddos", StringComparison.CurrentCultureIgnoreCase));
         }
 
         [TestMethod]

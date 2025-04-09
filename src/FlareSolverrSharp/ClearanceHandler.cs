@@ -21,7 +21,7 @@ namespace FlareSolverrSharp
         private readonly HttpClient client;
         private readonly string flareSolverrApiUrl;
         private FlareSolverr? flareSolverr;
-        private string userAgent = "";
+        private string? userAgent;
 
         /// <summary>
         /// Max timeout to solve the challenge.
@@ -32,7 +32,7 @@ namespace FlareSolverrSharp
         /// HTTP Proxy URL.
         /// Example: http://127.0.0.1:8888
         /// </summary>
-        public string ProxyUrl { get; set; } = "";
+        public string? ProxyUrl { get; set; }
 
         /// <summary>
         /// HTTP Proxy Username.

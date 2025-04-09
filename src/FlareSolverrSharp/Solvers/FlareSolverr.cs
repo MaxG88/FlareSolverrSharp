@@ -18,7 +18,7 @@ namespace FlareSolverrSharp.Solvers
 
         public int MaxTimeout { get; set; } = 60000;
 
-        public string ProxyUrl { get; set; } = "";
+        public string? ProxyUrl { get; set; }
 
         public string? ProxyUsername { get; set; }
 
