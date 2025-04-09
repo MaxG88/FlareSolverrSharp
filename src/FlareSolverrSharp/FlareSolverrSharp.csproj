@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PackageId>FlareSolverrSharp</PackageId>
+    <PackageId>FlareSolverrSharp-NET9</PackageId>
     <RootNamespace>FlareSolverrSharp</RootNamespace>
     <Version>3.0.8</Version>
     <Authors>Diego Heras (ngosang)</Authors>
