@@ -1,4 +1,4 @@
-name: publish to nuget
+name: Publish to NuGet
 
 on:
   push:
@@ -7,15 +7,27 @@ on:
 
 jobs:
   publish:
-    name: build, pack & publish
+    name: Build and Publish
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - name: publish on version change
-        id: publish_nuget
-        uses: alirezanet/publish-nuget@v3.0.4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          PROJECT_FILE_PATH: src/FlareSolverrSharp/FlareSolverrSharp.csproj
+          fetch-depth: 0
           
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v
+        with:
+          dotnet-version: 9.x
+      
+      - name: Restore dependencies
+        run: dotnet restore src/FlareSolverrSharp/FlareSolverrSharp.csproj
+        
+      - name: Build
+        run: dotnet build src/FlareSolverrSharp/FlareSolverrSharp.csproj --configuration Release --no-restore
+        
+      - name: Pack
+        run: dotnet pack src/FlareSolverrSharp/FlareSolverrSharp.csproj --configuration Release --no-build --output nupkgs
+        
+      - name: Push to NuGet
+        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
