@@ -1,4 +1,4 @@
-namespace FlareSolverrSharp.Constants
+﻿namespace FlareSolverrSharp.Constants
 {
     public static class HttpHeaders
     {
@@ -7,5 +7,6 @@ namespace FlareSolverrSharp.Constants
         public const string Cookie = "Cookie";
 
         public const string SetCookie = "Set-Cookie";
+
     }
 }

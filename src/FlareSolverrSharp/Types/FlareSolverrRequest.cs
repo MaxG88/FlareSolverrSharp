@@ -1,19 +1,19 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace FlareSolverrSharp.Types
 {
     public class FlareSolverrRequest
     {
         [JsonProperty("cmd")]
-        public string? Cmd { get; set; }
+        public string Cmd;
 
         [JsonProperty("url")]
-        public string? Url { get; set; }
+        public string Url;
 
         [JsonProperty("session")]
-        public string? Session { get; set; }
+        public string Session;
 
         [JsonProperty("proxy")]
-        public FlareSolverrRequestProxy? Proxy { get; set; }
+        public FlareSolverrRequestProxy Proxy;
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -8,8 +8,7 @@ namespace FlareSolverrSharp
 {
     public static class ChallengeDetector
     {
-        private static readonly HashSet<string> CloudflareServerNames = new HashSet<string>
-        {
+        private static readonly HashSet<string> CloudflareServerNames = new HashSet<string>{
         "cloudflare",
         "cloudflare-nginx",
         "ddos-guard"
@@ -32,34 +31,28 @@ namespace FlareSolverrSharp
             // check response headers
             if (!response.Headers.Server.Any(i =>
                     i.Product != null && CloudflareServerNames.Contains(i.Product.Name.ToLower())))
-            {
                 return false;
-            }
 
             // detect CloudFlare and DDoS-GUARD
             if (response.StatusCode.Equals(HttpStatusCode.ServiceUnavailable) ||
-                 response.StatusCode.Equals(HttpStatusCode.Forbidden))
-            {
+                 response.StatusCode.Equals(HttpStatusCode.Forbidden)) {
                 var responseHtml = response.Content.ReadAsStringAsync().Result;
                 if (responseHtml.Contains("<title>Just a moment...</title>") || // Cloudflare
                     responseHtml.Contains("<title>Access denied</title>") || // Cloudflare Blocked
                     responseHtml.Contains("<title>Attention Required! | Cloudflare</title>") || // Cloudflare Blocked
                     responseHtml.Trim().Equals("error code: 1020") || // Cloudflare Blocked
                     responseHtml.IndexOf("<title>DDOS-GUARD</title>", StringComparison.OrdinalIgnoreCase) > -1) // DDOS-GUARD
-                {
                     return true;
-                }
             }
 
             // detect Custom CloudFlare for EbookParadijs, Film-Paleis, MuziekFabriek and Puur-Hollands
             if (response.Headers.Vary.ToString() == "Accept-Encoding,User-Agent" &&
                 response.Content.Headers.ContentEncoding.ToString() == "" &&
                 response.Content.ReadAsStringAsync().Result.ToLower().Contains("ddos"))
-            {
-                return true;
-            }
+                return true; 
 
             return false;
         }
+
     }
 }
