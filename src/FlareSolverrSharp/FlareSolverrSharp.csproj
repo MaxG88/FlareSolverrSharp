@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>FlareSolverrSharp-NET9</PackageId>
     <RootNamespace>FlareSolverrSharp</RootNamespace>
-    <Version>3.0.9</Version>
+    <Version>3.0.10</Version>
     <Authors>Diego Heras (ngosang)</Authors>
     <Description>FlareSolverr .Net / Proxy server to bypass Cloudflare protection.</Description>
     <AssemblyName>FlareSolverrSharp</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
 </Project>
